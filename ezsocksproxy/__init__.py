@@ -39,7 +39,8 @@ def rewrite_links(body, base_url, proxy_url):
 
 class EZProxy(object):
 
-    def __init__(self, socks_addr):
+    def __init__(self, proxy_addr, socks_addr):
+        self.proxy_host, self.proxy_port = proxy_addr
         self.socks_host, self.socks_port = socks_addr
         self.cookies = cookielib.CookieJar()
 
@@ -56,7 +57,7 @@ class EZProxy(object):
     def __call__(self, environ, start_response):
         req = webob.Request(environ)
 
-        proxy_url = "http://localhost:9091/login"
+        proxy_url = "http://%s:%s/login" % (self.proxy_host, proxy_port)
 
         status = '200 OK'
         headers = {"Content-Type": "text/html"}
@@ -90,5 +91,5 @@ def serve(bind_addr, socks_addr):
     Spawn an EZProxy on bind_addr and tunnel network access via the proxy at
     socks_addr.
     """
-    app = EZProxy(socks_addr)
+    app = EZProxy(bind_addr, socks_addr)
     WSGIServer(bind_addr, app).serve_forever()
